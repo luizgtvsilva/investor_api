@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Django
+db.sqlite3
+application/__pycache__
+investor_api/__pycache__
+investor_api/migrations
