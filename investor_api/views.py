@@ -8,6 +8,7 @@ from .serializers import (LoanDetailSerializer,
                           CashFlowCreateSerializer,
                           CashFlowSerializer,
                           )
+from .tasks import process_csv
 
 
 class LoanList(APIView):
@@ -88,3 +89,17 @@ class CashFlowDetail(APIView):
         cash_flow = self.get_object(pk)
         cash_flow.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CsvUploadView(APIView):
+    def post(self, request):
+        loan_csv = request.FILES.get('loans.csv')
+        cash_flow_csv = request.FILES.get('cash_flow.csv')
+
+        if not loan_csv or not cash_flow_csv:
+            return Response({'message': 'Both files is mandatory: loans.csv and cash_flow.csv'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Envia o processamento dos arquivos csv para o Celery
+        process_csv.delay(loan_csv.read().decode('utf-8'), cash_flow_csv.read().decode('utf-8'))
+
+        return Response({'message': 'Process started.'}, status=status.HTTP_200_OK)

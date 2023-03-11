@@ -19,6 +19,7 @@ from investor_api.views import (LoanList,
                                 LoanDetail,
                                 CashFlowList,
                                 CashFlowDetail,
+                                CsvUploadView
                                 )
 
 
@@ -28,4 +29,5 @@ urlpatterns = [
     path('loans/<int:pk>/', LoanDetail.as_view()),
     path('cashflows/', CashFlowList.as_view()),
     path('cashflows/<int:pk>/', CashFlowDetail.as_view()),
+    path('csv-upload/', CsvUploadView.as_view())
 ]
