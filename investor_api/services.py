@@ -1,4 +1,4 @@
-from scipy.optimize import root
+from pyxirr import xirr
 from investor_api.models import CashFlow
 from django.db.models import Sum
 import datetime
@@ -44,41 +44,26 @@ def calculate_is_closed(loan):
         loan.save()
 
 
-def npv(rate, cash_flows):
-    total = 0
-    for i, cash_flow in enumerate(cash_flows):
-        if isinstance(cash_flow[0], str):
-            cash_flow_date = datetime.datetime.strptime(cash_flow[0], '%Y-%m-%d').date()
-        else:
-            cash_flow_date = cash_flow[0]
-        total += cash_flow[1] / ((1 + rate) ** ((cash_flow_date - cash_flows[0][0]).days / 365.0))
-    return total
-
-
 def calculate_expected_irr(loan):
-    funding_cashflow = CashFlow.objects.filter(loan_identifier=loan.identifier,
-                                               type='Funding').last()
-    maturity_date = loan.maturity_date
-    invested_amount = loan.invested_amount
-    expected_interest_amount = loan.expected_interest_amount
-    cash_flows = [
-        (funding_cashflow.reference_date, funding_cashflow.amount),
-        (maturity_date, invested_amount + abs(expected_interest_amount))
-    ]
-    loan.expected_irr = root(lambda r: npv(r, cash_flows), 0.0).x[0]
+    cf = CashFlow.objects.filter(loan_identifier=loan.identifier, type='Funding').last()
+
+    expected_irr = [(cf.reference_date, cf.amount),
+                    (loan.maturity_date, loan.invested_amount + loan.expected_interest_amount)]
+    
+    loan.expected_irr = xirr(expected_irr)
     loan.save()
 
 
 def calculate_realized_irr(loan):
-    funding_cashflow = CashFlow.objects.filter(loan_identifier=loan.identifier,
-                                               type='Funding').last()
-    repayment_cashflows = CashFlow.objects.filter(loan_identifier=loan.identifier,
-                                               type='Repayment')
-    cash_flows = [
-        (funding_cashflow.reference_date, - funding_cashflow.amount)
-    ]
-    for repayment_cashflow in repayment_cashflows:
-        cash_flows.append((repayment_cashflow.reference_date,
-                           repayment_cashflow.amount))
-    loan.realized_irr = root(lambda r: npv(r, cash_flows), 0.0).x[0]
-    loan.save()
+    if loan.is_closed:
+        cf = CashFlow.objects.filter(loan_identifier=loan.identifier, type='Funding').last()
+        cf_repayments = CashFlow.objects.filter(loan_identifier=loan.identifier,
+                                                type='Repayment')
+    
+        realized_irr = [(cf.reference_date, cf.amount)]
+                        
+        for repayment in cf_repayments:
+            realized_irr.append((repayment.reference_date, repayment.amount))
+        
+        loan.realized_irr = xirr(realized_irr)
+        loan.save()
