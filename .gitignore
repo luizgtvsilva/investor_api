@@ -133,3 +133,4 @@ db.sqlite3
 application/__pycache__
 investor_api/__pycache__
 investor_api/migrations
+dump.rdb
