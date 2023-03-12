@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'investor_api',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -131,3 +132,10 @@ CELERY_RESULT_BACKEND = "redis://localhost:6379"
 CELERY_IMPORTS = [
     "investor_api.tasks",
 ]
+
+
+# REST FRAMEWORK
+
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
+}

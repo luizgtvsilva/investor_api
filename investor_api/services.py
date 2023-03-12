@@ -1,5 +1,5 @@
 from pyxirr import xirr
-from investor_api.models import CashFlow
+from investor_api.models import CashFlow, Loan
 from django.db.models import Sum
 import datetime
 
@@ -29,21 +29,6 @@ def calculate_expected_interest_amount(loan):
     loan.save()
 
 
-def calculate_is_closed(loan):
-    total_repayment = CashFlow.objects.filter(loan_identifier=loan.identifier,
-                                              type='Repayment').aggregate(
-                                                total=Sum('amount')
-                                                )['total']
-
-    if total_repayment:
-        expected_amount = loan.invested_amount + loan.expected_interest_amount
-        if total_repayment >= expected_amount:
-            loan.is_closed = True
-        else:
-            loan.is_closed = False
-        loan.save()
-
-
 def calculate_expected_irr(loan):
     cf = CashFlow.objects.filter(loan_identifier=loan.identifier, type='Funding').last()
 
@@ -67,3 +52,23 @@ def calculate_realized_irr(loan):
         
         loan.realized_irr = xirr(realized_irr)
         loan.save()
+
+
+def calculate_is_closed(loan=None, loan_identifier=None):
+    if not loan:
+        loan = Loan.objects.get(identifier=loan_identifier)
+
+    total_repayment = CashFlow.objects.filter(loan_identifier=loan.identifier,
+                                              type='Repayment').aggregate(
+                                                total=Sum('amount')
+                                                )['total']
+
+    if total_repayment:
+        expected_amount = loan.invested_amount + loan.expected_interest_amount
+        if total_repayment >= expected_amount:
+            loan.is_closed = True
+            loan.save()
+            calculate_realized_irr(loan)
+        else:
+            loan.is_closed = False
+            loan.save()

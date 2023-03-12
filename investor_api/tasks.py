@@ -13,7 +13,6 @@ from .services import (
 
 @shared_task
 def process_csv(loan_csv_content, cash_flow_csv_content):
-    Loan.objects.all().delete()
     loan_csv = csv.DictReader(StringIO(loan_csv_content))
     cash_flow_csv = csv.DictReader(StringIO(cash_flow_csv_content))
     loans_created = []

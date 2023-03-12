@@ -28,12 +28,6 @@ class LoanDetailSerializer(serializers.ModelSerializer):
                   'cash_flows']
 
 
-class LoanCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Loan
-        fields = '__all__'
-
-
 class CashFlowCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CashFlow
