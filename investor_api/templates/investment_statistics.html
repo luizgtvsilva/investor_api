@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Investment Statistics (Total Invested Amount: EUR {{ total_invested_amount }})</h1>
+  <h2>Investment Distribution</h2>
+  <img src="{{ investment_distribution }}" alt="Investment Distribution">
+  <h2>Investment and Repayment by Loan</h2>
+  <img src="{{ investment_repayment }}" alt="Investment and Repayment by Loan">
+  <h2>Investment and Repayment over Time</h2>
+  <img src="{{ investment_over_time }}" alt="Investment and Repayment over Time">
+  <h2>Investment Statistics Summary</h2>
+  <ul>
+    <li>Number of Loans: {{ num_loans }}</li>
+    <li>Total Invested Amount: EUR {{ total_invested_amount }}</li>
+    <li>Current Invested Amount: EUR {{ current_invested_amount }}</li>
+    <li>Total Repaid Amount: EUR {{ total_repaid_amount }}</li>
+    <li>Average Realized IRR: {{ average_irr }}%</li>
+  </ul>
+{% endblock %}
