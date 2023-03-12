@@ -1,4 +1,7 @@
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.core.cache import cache
 
 
 class Loan(models.Model):
@@ -29,3 +32,9 @@ class CashFlow(models.Model):
                                         to_field='identifier',
                                         null=True, blank=True,
                                         default=None)
+
+
+@receiver(post_save, sender=Loan)
+@receiver(post_save, sender=CashFlow)
+def invalidate_cache(sender, **kwargs):
+    cache.clear()

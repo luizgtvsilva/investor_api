@@ -33,5 +33,5 @@ urlpatterns = [
     path('cashflows/<int:pk>/', CashFlowDetail.as_view()),
     path('csv/upload/', CsvUploadView.as_view()),
     path('statistics/basic/', InvestmentStatisticsView.as_view()),
-    path('statistics/chart/', InvestmentStatisticsTemplateView.as_view())
+    path('statistics/chart/', InvestmentStatisticsTemplateView.as_view()),
 ]

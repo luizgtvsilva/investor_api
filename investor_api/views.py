@@ -13,10 +13,12 @@ from .tasks import process_csv
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Sum, F, FloatField, ExpressionWrapper
 from django.views.generic import TemplateView
+from django.views.decorators.cache import cache_page
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 import io
 import base64
+from django.utils.decorators import method_decorator
 
 
 class LoanList(APIView):
@@ -133,6 +135,8 @@ class CsvUploadView(APIView):
 
 
 class InvestmentStatisticsView(APIView):
+
+    @method_decorator(cache_page(60 * 15))
     def get(self, request):
         try:
             loans = Loan.objects.all()
@@ -180,6 +184,10 @@ class InvestmentStatisticsView(APIView):
 
 class InvestmentStatisticsTemplateView(TemplateView):
     template_name = "investment_statistics.html"
+
+    @method_decorator(cache_page(60 * 15))
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
