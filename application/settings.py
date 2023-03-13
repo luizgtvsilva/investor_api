@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from datetime import timedelta
+import os
 from pathlib import Path
 import redis
 
@@ -173,3 +174,12 @@ CACHES = {
         "KEY_PREFIX": "example"
     }
 }
+
+
+# TEST
+
+TEST_DISCOVER_TOP_LEVEL_DIRS = [
+    os.path.join(BASE_DIR, 'application'),
+    os.path.join(BASE_DIR, 'investor_api'),
+]
+TEST_DISCOVER_PATTERN = "test_*.py"
