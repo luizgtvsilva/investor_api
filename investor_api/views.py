@@ -8,7 +8,7 @@ from .serializers import (
     LoanDetailSerializer,
     CashFlowCreateSerializer,
     CashFlowSerializer,
-    CustomUserSerializer
+    CustomUserSerializer,
 )
 from .tasks import process_csv
 from django_filters.rest_framework import DjangoFilterBackend
@@ -20,18 +20,21 @@ from matplotlib.figure import Figure
 import io
 import base64
 from django.utils.decorators import method_decorator
-from rest_framework import generics, permissions
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .permissions import IsAnalyst, IsInvestor
 
 
 class CustomUserList(generics.ListCreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
-    permission_classes = [IsAuthenticated, IsInvestor]
+    permission_classes = [IsAuthenticated, (IsAdminUser | IsInvestor)]
 
 
 class LoanList(APIView):
+
+    permission_classes = [IsAuthenticated, (IsAdminUser | IsInvestor | IsAnalyst)]
+
     filter_backends = [DjangoFilterBackend]
     filterset_fields = [
         "identifier",
@@ -61,6 +64,9 @@ class LoanList(APIView):
 
 
 class LoanDetail(APIView):
+
+    permission_classes = [IsAuthenticated, (IsAdminUser | IsInvestor | IsAnalyst)]
+
     def get_object(self, pk):
         try:
             return Loan.objects.get(pk=pk)
@@ -74,6 +80,16 @@ class LoanDetail(APIView):
 
 
 class CashFlowList(APIView):
+    def get_permissions(self):
+        if self.request.method == "GET":
+            permission_classes = [
+                IsAuthenticated,
+                (IsAdminUser | IsInvestor | IsAnalyst),
+            ]
+        else:
+            permission_classes = [IsAuthenticated, (IsAdminUser | IsInvestor)]
+        return [permission() for permission in permission_classes]
+
     filter_backends = [DjangoFilterBackend]
     filterset_fields = [
         "id",
@@ -106,6 +122,9 @@ class CashFlowList(APIView):
 
 
 class CashFlowDetail(APIView):
+
+    permission_classes = [IsAuthenticated, (IsAdminUser | IsInvestor | IsAnalyst)]
+
     def get_object(self, pk):
         try:
             return CashFlow.objects.get(pk=pk)
@@ -119,6 +138,9 @@ class CashFlowDetail(APIView):
 
 
 class CsvUploadView(APIView):
+
+    permission_classes = [IsAuthenticated, (IsAdminUser | IsInvestor)]
+
     def post(self, request):
         loan_csv = request.FILES.get("loans.csv")
         cash_flow_csv = request.FILES.get("cash_flow.csv")
@@ -145,6 +167,8 @@ class CsvUploadView(APIView):
 
 
 class InvestmentStatisticsView(APIView):
+
+    permission_classes = [IsAuthenticated, (IsAdminUser | IsInvestor | IsAnalyst)]
 
     @method_decorator(cache_page(60 * 15))
     def get(self, request):
@@ -193,7 +217,10 @@ class InvestmentStatisticsView(APIView):
 
 
 class InvestmentStatisticsTemplateView(TemplateView):
+
     template_name = "investment_statistics.html"
+
+    permission_classes = [IsAuthenticated, (IsAdminUser | IsInvestor | IsAnalyst)]
 
     @method_decorator(cache_page(60 * 15))
     def dispatch(self, request, *args, **kwargs):
