@@ -3,11 +3,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from investor_api.services import calculate_is_closed
-from .models import Loan, CashFlow
+from .models import Loan, CashFlow, CustomUser
 from .serializers import (
     LoanDetailSerializer,
     CashFlowCreateSerializer,
     CashFlowSerializer,
+    CustomUserSerializer
 )
 from .tasks import process_csv
 from django_filters.rest_framework import DjangoFilterBackend
@@ -19,6 +20,15 @@ from matplotlib.figure import Figure
 import io
 import base64
 from django.utils.decorators import method_decorator
+from rest_framework import generics, permissions
+from rest_framework.permissions import IsAuthenticated
+from .permissions import IsAnalyst, IsInvestor
+
+
+class CustomUserList(generics.ListCreateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
+    permission_classes = [IsAuthenticated, IsInvestor]
 
 
 class LoanList(APIView):

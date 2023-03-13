@@ -21,8 +21,10 @@ from investor_api.views import (LoanList,
                                 CashFlowDetail,
                                 CsvUploadView,
                                 InvestmentStatisticsView,
-                                InvestmentStatisticsTemplateView
+                                InvestmentStatisticsTemplateView,
+                                CustomUserList
                                 )
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 
 urlpatterns = [
@@ -34,4 +36,6 @@ urlpatterns = [
     path('csv/upload/', CsvUploadView.as_view()),
     path('statistics/basic/', InvestmentStatisticsView.as_view()),
     path('statistics/chart/', InvestmentStatisticsTemplateView.as_view()),
+    path('users/', CustomUserList.as_view()),
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
 ]
